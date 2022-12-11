@@ -5,11 +5,15 @@
 
 using namespace std;
 
+//base class for all enemies
 class Enemy : public GameObject
 {
 public:
 	int attackTime;
+
+	//this is how close the enemy will get to the player
 	int range;
+
 	Enemy(SDL_Renderer* renderer, const char* path, int x, int y, int w, int h, float angle, string tag, bool hasAnimations, int range, float scale, int health) : GameObject(renderer, path, x, y, w, h, angle, tag, hasAnimations, scale, health)
 	{
 		this->range = range;
@@ -22,8 +26,10 @@ public:
 	void Update(SDL_Renderer* renderer) override 
 	{
 		GameObject::Update(renderer);
+
 		if (spriteTime > 0) spriteTime--;
 		else NextSprite(totalSpriteTime);
+
 		if (state != DEATH)
 		{
 			if (!isInRange(range))
@@ -48,6 +54,8 @@ public:
 			UpdateCollissionBox();
 		}
 	}
+
+	//check if enemy is in range of the player
 	bool isInRange(int range)
 	{
 		Vector2D playerPos = Game::gameObjects[0]->position;

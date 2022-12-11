@@ -155,7 +155,7 @@ extern int boltH;
 extern float boltScale;
 extern float boltAngle;
 
-//sprite paths
+// sprite/sound/font paths
 extern const char* POISONBALL;
 extern const char* EYE;
 extern const char* SKELETON;

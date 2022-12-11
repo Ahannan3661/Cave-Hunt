@@ -5,6 +5,7 @@
 
 using namespace std;
 
+//Goblin enemy is created via this class
 class Goblin : public Enemy
 {
 private:
@@ -17,11 +18,16 @@ public:
 		totalDeathTime = totalEnemyDeathTime;
 		spriteOffsetX = monsterSpriteOffsetX;
 		spriteOffsetY = monsterSpriteOffsetY;
+
+		//creating a different rectangle for precise collission
 		collissionBox.x += monsterSpriteOffsetX;
 		collissionBox.y += monsterSpriteOffsetY;
 		collissionBox.w = monsterSpriteW * scale;
 		collissionBox.h = monsterSpriteH * scale;
+
+		//place health bar on top of object
 		healthBar->Update(collissionBox.x, collissionBox.y - 20);
+
 		goblinAttackSound = Mix_LoadWAV(MEELEATTACKSOUND);
 	}
 	~Goblin()
@@ -32,9 +38,11 @@ public:
 	
 	void Update(SDL_Renderer* renderer) override
 	{
+		//perform a meele attack
 		if (state == ATTACKING && srcRect.x == sheetWidth - srcRect.w)
 		{
 			Mix_PlayChannel(-1, goblinAttackSound, 0);
+			//if the player is in range, they take damage else they don't
 			if (isInRange(range))
 			{
 				Game::gameObjects[0]->takeHit(damage);

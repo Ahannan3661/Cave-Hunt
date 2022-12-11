@@ -6,12 +6,11 @@
 
 using namespace std;
 
+//Player is created via this class
 class Player : public GameObject
 {
 private:
-	int spellCount;
 	int castingCooldown;
-	int reloadStart = totalSpellReloadTime;
 	bool soundPlayed = false;
 	Mix_Chunk* youLose = NULL;
 	Mix_Chunk* spellSound = NULL;
@@ -27,8 +26,5 @@ public:
 	}
 	void Update(SDL_Renderer*) override;
 	bool OnCoolDown();
-	int getSpells() { return spellCount; }
 	GameObject* cast1(SDL_Renderer*);
-	GameObject* cast2(SDL_Renderer*);
-	bool hasSpell() { return spellCount > 0; }
 };

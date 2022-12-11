@@ -6,17 +6,24 @@
 
 using namespace std;
 
+//Health bar for different objects is created via this class
 class HealthBar
 {
 private:
+
+	//with what the container is filled
 	texStruct* healthFill;
+
+	//the container to be filled
 	texStruct* healthBar;
+
 	SDL_Rect fillDest;
 	SDL_Rect barDest;
 public:
-
+	//HealthBar created based on object's health
 	HealthBar(SDL_Renderer* renderer, const char* path, int x, int y, int objectHealth)
 	{
+		//initializing the Bar and its filling with proper offset
 		barDest.x = x;
 		barDest.y = y;
 		healthBar = TextureManager::LoadTexture(renderer, HEALTHBAR);
@@ -46,6 +53,7 @@ public:
 		TextureManager::Draw(renderer, healthBar->tex, healthBar->srcRect, barDest, 0.0f, SDL_FLIP_NONE);
 		TextureManager::Draw(renderer, healthFill->tex, healthFill->srcRect, fillDest, 0.0f, SDL_FLIP_NONE);
 	}
+	//shrink bar fillings when object takes a hit
 	void shrinkBar(int val)
 	{
 		fillDest.w -= val;

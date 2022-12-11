@@ -6,6 +6,7 @@
 
 using namespace std;
 
+//Mushroom enemy is created via this class
 class Mushroom : public Enemy
 {
 private:
@@ -16,11 +17,16 @@ public:
 		totalDeathTime = totalEnemyDeathTime;
 		spriteOffsetX = monsterSpriteOffsetX;
 		spriteOffsetY = monsterSpriteOffsetY;
+
+		//creating a different rectangle for precise collission
 		collissionBox.x += monsterSpriteOffsetX;
 		collissionBox.y += monsterSpriteOffsetY;
 		collissionBox.w = monsterSpriteW*scale;
 		collissionBox.h = monsterSpriteH*scale;
+
+		//place health bar on top of object
 		healthBar->Update(collissionBox.x, collissionBox.y - 20);
+
 		shroomAttackSound = Mix_LoadWAV(SPELLSOUND);
 	}
 	~Mushroom()
@@ -31,6 +37,7 @@ public:
 	void Update(SDL_Renderer* renderer) override
 	{
 		Enemy::Update(renderer);
+		//shhot a StraightProjectile in player's direction;
 		if (state == ATTACKING && srcRect.x == sheetWidth - srcRect.w)
 		{
 			Mix_PlayChannel(-1, shroomAttackSound, 0);

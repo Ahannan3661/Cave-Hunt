@@ -5,6 +5,7 @@
 
 using namespace std;
 
+//A projectile that is directed towards the player
 class DirectedProjectile : public Projectile
 {
 private:

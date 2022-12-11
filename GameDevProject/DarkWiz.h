@@ -7,23 +7,34 @@
 
 using namespace std;
 
+//dark wizard enemy is created via this class
 class DarkWiz : public Enemy
 {
 private:
+	//dark wizard controls this thundercloud
 	GameObject* thunderCloud;
+
 	Mix_Chunk* wizAttackSound = NULL;
 public:
 	DarkWiz(SDL_Renderer* renderer, const char* path, int x, int y, int w, int h, float angle, string tag, bool hasAnimations, int range, float scale, int health) : Enemy(renderer, path, x, y, w, h, angle, tag, hasAnimations, range, scale, health)
 	{
 		totalDeathTime = totalEnemyDeathTime;
+
 		spriteOffsetX = darkWizSpriteOffsetX;
 		spriteOffsetY = darkWizSpriteOffsetY;
+
+		//creating a different rectangle for precise collission
 		collissionBox.x += darkWizSpriteOffsetX;
 		collissionBox.y += darkWizSpriteOffsetY;
 		collissionBox.w = darkWizSpriteW * scale;
 		collissionBox.h = darkWizSpriteH * scale;
+
+		//place the health bar above the object
 		healthBar->Update(collissionBox.x, collissionBox.y - 20);
+
+		//initializing the thundercloud
 		thunderCloud = new ThunderCloud(renderer, TUNDERCLOUD, x, CLOUD_SPAWNY, cloudW, cloudH, 0.0f, "Cloud", false, cloudScale, 1);
+
 		wizAttackSound = Mix_LoadWAV(SPELLSOUND);
 	}
 	~DarkWiz()
@@ -37,7 +48,10 @@ public:
 	{
 		if(state != DEATH)
 			thunderCloud->Update(renderer);
+
 		Enemy::Update(renderer);
+
+		//attack from the thunder cloud
 		if (state == ATTACKING && srcRect.x == sheetWidth - srcRect.w)
 		{
 			Mix_PlayChannel(-1, wizAttackSound, 0);
@@ -46,6 +60,7 @@ public:
 			setState(IDLE);
 		}
 	}
+
 	void Render(SDL_Renderer* renderer) override
 	{
 		thunderCloud->Render(renderer);

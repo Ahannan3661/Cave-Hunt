@@ -1,6 +1,10 @@
 #pragma once
 #include "Constants.h"
 
+////
+// ALL THE GAME CONSTANTS ARE INITIALIZED IN THIS CLASS
+////
+
 //Screen dimension constants
  int SCREEN_WIDTH = 640;
  int SCREEN_HEIGHT = 480;

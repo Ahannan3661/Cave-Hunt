@@ -9,6 +9,7 @@
 
 using namespace std;
 
+//base class for all gameObjects
 class GameObject
 {
 private:
@@ -80,11 +81,15 @@ public:
 
 	virtual void Update(SDL_Renderer* renderer) 
 	{
+		//update object's healthBar
 		if (hasAnimations) healthBar->Update(collissionBox.x, collissionBox.y - 20);
+
+		//if deathtimer has begun... Increment it
 		if (deathTimer > 0)
 		{
 			deathTimer++;
 		}
+		//if death timer finished set alive to false
 		if (deathTimer > totalDeathTime) 
 		{
 			Destroy();
@@ -100,8 +105,6 @@ public:
 	bool Alive() { return alive; }
 
 	void Destroy() { alive = false; }
-
-	void setTex(SDL_Texture* tex) { textures[state]->tex = tex; }
 
 	void UpdateDestRect();
 

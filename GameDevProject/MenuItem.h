@@ -5,6 +5,8 @@
 #include <SDL_mixer.h>
 #include <stdio.h>
 #include <iostream>
+
+//Each item in main menu is created via this struct
 struct MenuItem
 {
 	const char* label;
@@ -15,6 +17,7 @@ struct MenuItem
 	int rows;
 	int cols;
 
+	//Menu Item is drawn using 3 sprites to make a complete box depending on the size of its contents
 	void DrawMenuItem(SDL_Renderer* renderer, SDL_Texture* buttonCorner, SDL_Texture* buttonEdge, SDL_Texture* buttonMiddle)
 	{
 		for (int j = 0; j < rows; j++)
@@ -105,6 +108,7 @@ struct MenuItem
 		SDL_RenderCopy(renderer, texture, NULL, &menuItemDest);
 	}
 
+	//Change menu Item's color when the mouse does/doesn't hover over it
 	void HighLight(SDL_Renderer* renderer, bool shouldHighlight, TTF_Font* font)
 	{
 		isHighlighted = shouldHighlight;

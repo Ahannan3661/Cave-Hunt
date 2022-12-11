@@ -2,11 +2,13 @@
 #include "Layer.h"
 #include "Constants.h"
 
+//parallax background is created via this class
 class BackGround
 {
 public:
 	BackGround(SDL_Renderer* renderer)
 	{
+		//initializing all background layers
 		layers[0] = new Layer(renderer, SKY, l5MoveSpeed);
 		layers[1] = new Layer(renderer, DOWNLAYER, l4MoveSpeed);
 		layers[2] = new Layer(renderer, MIDDLELAYER, l3MoveSpeed);
@@ -16,6 +18,7 @@ public:
 
 	~BackGround()
 	{
+		//deleting layers
 		for (int i = 0; i < 5; i++)
 		{
 			delete layers[i];
@@ -39,5 +42,6 @@ public:
 		}
 	}
 private:
+	//background consists of 5 layers
 	Layer* layers[5];
 };

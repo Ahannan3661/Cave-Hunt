@@ -18,6 +18,7 @@ class GameObject;
 
 using namespace std;
 
+//Core game class
 class Game
 {
 public:
@@ -25,10 +26,11 @@ public:
 	~Game();
 
 	void init(const char*, int, int, int, int);
+
 	void update();
 	void render();
-	void clean();
 	void handleEvents();
+	void clean();
 
 	bool running() { return isRunning; }
 
