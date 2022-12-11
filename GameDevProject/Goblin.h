@@ -7,10 +7,11 @@ using namespace std;
 
 class Goblin : public Enemy
 {
+private:
+	Mix_Chunk* goblinAttackSound = NULL;
 public:
-	//bool hitRegistered = false;
 	int damage;
-	Goblin(SDL_Renderer* renderer, const char* path, int x, int y, int w, int h, float angle, string tag, bool hasAnimations, int range, float scale, int damage) : Enemy(renderer, path, x, y, w, h, angle, tag, hasAnimations, range, scale)
+	Goblin(SDL_Renderer* renderer, const char* path, int x, int y, int w, int h, float angle, string tag, bool hasAnimations, int range, float scale, int damage, int health) : Enemy(renderer, path, x, y, w, h, angle, tag, hasAnimations, range, scale, health)
 	{
 		this->damage = damage;
 		totalDeathTime = totalEnemyDeathTime;
@@ -20,40 +21,20 @@ public:
 		collissionBox.y += monsterSpriteOffsetY;
 		collissionBox.w = monsterSpriteW * scale;
 		collissionBox.h = monsterSpriteH * scale;
-		setHealth(20);
-		setSpeed(2);
+		healthBar->Update(collissionBox.x, collissionBox.y - 20);
+		goblinAttackSound = Mix_LoadWAV(MEELEATTACKSOUND);
 	}
-	/*
-	static GameObject* readNimble(ifstream& file)
+	~Goblin()
 	{
-		Nimble* temp = new Nimble();
-		GameObject* readObject = temp->readFromFile(file);
-		delete temp;
-		temp = nullptr;
-		return readObject;
+		Mix_FreeChunk(goblinAttackSound);
+		goblinAttackSound = NULL;
 	}
-	GameObject* readFromFile(ifstream& file) override
-	{
-		GameObject* clone = GameObject::readGameObject(file);
-		Nimble* readNimble = new Nimble(clone->path, clone->position.x, clone->position.y, clone->width, clone->health, clone->scale, clone->sheetWidth);
-		readNimble->velocity = clone->velocity;
-		delete clone;
-		clone = nullptr;
-		file >> readNimble->shootingCooldown;
-		file >> readNimble->dodgingCoolDown;
-		return readNimble;
-	}
-	void writeToFile(ofstream& file) override
-	{
-		file << "[Nimble]\n";
-		GameObject::writeToFile(file);
-		file << shootingCooldown << "\n";
-		file << dodgingCoolDown << "\n";
-	}*/
+	
 	void Update(SDL_Renderer* renderer) override
 	{
 		if (state == ATTACKING && srcRect.x == sheetWidth - srcRect.w)
 		{
+			Mix_PlayChannel(-1, goblinAttackSound, 0);
 			if (isInRange(range))
 			{
 				Game::gameObjects[0]->takeHit(damage);
@@ -63,14 +44,5 @@ public:
 		}
 		Enemy::Update(renderer);
 	}
-	/*void Attack(SDL_Renderer* renderer) override
-	{
-		if (state == ATTACKING && srcRect.x == sheetWidth - srcRect.w)
-		{
-			Game::gameObjects.push_back(new PoisonBall(renderer, "assets/monsters/mushroom/poisonBall.png", position.x - monsterSpriteOffsetX - monsterSpriteW, position.y + monsterSpriteOffsetY, 32, 32, 0.0f, "PoisonBall", false, 5, -1));
-			spriteTime = 0;
-			attackTime = totalAttackTime;
-		}
-	}*/
-	bool OnCoolDown();
+
 };

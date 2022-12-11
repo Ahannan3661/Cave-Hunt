@@ -1,7 +1,6 @@
-// GameDevProject.cpp : This file contains the 'main' function. Program execution begins and ends there.
+// CaveHunt.cpp : This file contains the 'main' function. Program execution begins and ends there.
 //
 #include "Game.h"
-#include "Constants.h"
 
 #undef main
 

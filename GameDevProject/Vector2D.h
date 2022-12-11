@@ -1,6 +1,10 @@
 #pragma once
 #include <iostream>
 #include <cmath>
+
+//value of pi
+const double pi = 3.14159265358979323846;
+
 using namespace std;
 
 class Vector2D

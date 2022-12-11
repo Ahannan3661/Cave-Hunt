@@ -1,6 +1,6 @@
 #include "Player.h"
 
-Player::Player(SDL_Renderer* renderer, const char* path, int x, int y, int w, int h, float angle, string tag, bool hasAnimations, float scale) : GameObject(renderer, path, x, y, w, h, angle, tag, hasAnimations, scale)
+Player::Player(SDL_Renderer* renderer, const char* path, int x, int y, int w, int h, float angle, string tag, bool hasAnimations, float scale, int health) : GameObject(renderer, path, x, y, w, h, angle, tag, hasAnimations, scale, health)
 {
 	totalDeathTime = totalPlayerDeathTime;
 	spriteOffsetX = playerSpriteOffsetX;
@@ -9,24 +9,28 @@ Player::Player(SDL_Renderer* renderer, const char* path, int x, int y, int w, in
 	collissionBox.y += playerSpriteOffsetY;
 	collissionBox.w = playerSpriteW* scale;
 	collissionBox.h = playerSpriteH* scale;
-	setHealth(50);
-	setSpeed(5);
+	setSpeed(playerSpeed);
 	spriteTime = totalSpriteTime;
 	score = 0;
 	spellCount = totalSpellCount;
 	castingCooldown = totalCastingCooldown;
 	velocity.Zero();
+	healthBar->Update(collissionBox.x, collissionBox.y - 20);
+	youLose = Mix_LoadWAV(YOULOSESOUND);
+	spellSound = Mix_LoadWAV(PLAYERSPELLSOUND);
 }
 
 GameObject* Player::cast1(SDL_Renderer* renderer)
 {
+	Mix_PlayChannel(-1, spellSound, 0);
 	castingCooldown = totalCastingCooldown;
-	return new StraightProjectile(renderer, "assets/player/playerSpell1.png", position.x + (playerSpriteOffsetX + playerSpriteW * (flipStatus == SDL_FLIP_NONE ? 1 : -1)), position.y + playerSpriteOffsetY + 20, 32, 32, 0.0f, "Projectile", false, 10, (flipStatus == SDL_FLIP_HORIZONTAL ? -1 : 1), 1, false);
+	return new StraightProjectile(renderer, PLAYERSPELL, position.x + (playerSpriteOffsetX + playerSpriteW * (flipStatus == SDL_FLIP_NONE ? 1 : -1)), position.y + playerSpriteOffsetY + 20, projW, projH, 0.0f, "Projectile", false, playerProjDamage, (flipStatus == SDL_FLIP_HORIZONTAL ? -1 : 1), 1, false, projHealth);
 }
 
 void Player::Update(SDL_Renderer* renderer)
 {
 	GameObject::Update(renderer);
+
 	if (spriteTime > 0) spriteTime--;
 	else
 	{
@@ -46,8 +50,11 @@ void Player::Update(SDL_Renderer* renderer)
 			velocity.y += 2;
 		}
 
-
-		if (position.y > PLATFORM_HEIGHT - playerSpriteOffsetY - playerSpriteH) { isJumping = false; position.y = PLATFORM_HEIGHT - playerSpriteOffsetY - playerSpriteH; velocity.y = 0; }
+		if (position.y > PLATFORM_HEIGHT - playerSpriteOffsetY - playerSpriteH) 
+		{
+			isJumping = false;
+			position.y = PLATFORM_HEIGHT - playerSpriteOffsetY - playerSpriteH; velocity.y = 0; 
+		}
 
 		if (reloadStart != 0) { if (spellCount < totalSpellCount) reloadStart--; }
 		else
@@ -70,8 +77,6 @@ void Player::Update(SDL_Renderer* renderer)
 		{
 			if (collissionBox.x < playerLimit) position.x = playerLimit - playerSpriteOffsetX;
 			if (collissionBox.x > (SCREEN_WIDTH - collissionBox.w - playerLimit)) position.x = (SCREEN_WIDTH - collissionBox.w - playerSpriteOffsetX - playerLimit);
-			//if (collissionBox.y < 0.0f) position.y = 0.0f;
-			//if (position.y > (SCREEN_HEIGHT - collissionBox.h)) position.y = (PLATFORM_HEIGHT - collissionBox.h);
 			velocity.x = 0.0f;
 			velocity.y = 0.0f;
 		}
@@ -81,29 +86,15 @@ void Player::Update(SDL_Renderer* renderer)
 		//updating collission box values
 		UpdateCollissionBox();
 	}
-}
-/*
-GameObject* Player::Shoot(bool isMissile)
-{
-	GameObject* bullet;
-	if (isMissile)
-	{
-		//homing missile
-		bullet = new Bullet("assets/PlayerMissile.png", position.x + 16, position.y - 16, 32, 32, 1, 32, true, false, 270.0f, 1);
-		missileCount--;
-		Mix_PlayChannel(-1, missileSound, 0);
-		reloadStart = totalReloadTime;
-
-	}
 	else
 	{
-		//normal bullet
-		bullet = new Bullet("assets/PlayerBullet.png", position.x + 16, position.y - 16, 32, 32, 1, 96, false, false, 270.0f, 1);
-		Mix_PlayChannel(-1, bulletSound, 0);
+		if (!soundPlayed)
+		{
+			Mix_PlayChannel(-1, youLose, 0);
+			soundPlayed = true;
+		}
 	}
-	shootingCoolDown = totalShootingCoolDown;
-	return bullet;
-}*/
+}
 
 bool Player::OnCoolDown()
 {

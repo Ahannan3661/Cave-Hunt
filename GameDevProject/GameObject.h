@@ -4,14 +4,15 @@
 #include <iostream>
 #include <fstream>
 #include "TextureManager.h"
-#include "Constants.h"
-
-
+#include "HealthBar.h"
+#include <SDL_mixer.h>
 
 using namespace std;
 
 class GameObject
 {
+private:
+	Mix_Chunk* hitSound = NULL;
 public:
 	bool isInvinsible = false;
 	SDL_RendererFlip flipStatus;
@@ -35,83 +36,10 @@ public:
 	float scale;
 	bool isJumping = false;
 	int totalDeathTime = 0;
+	HealthBar* healthBar = nullptr;
 
-	virtual void writeToFile(ofstream& file)
-	{
-		file << health << "\n";
-		file << angle << "\n";
-		file << alive ? 1 : 0;
-		file << "\n";
-		file << speed << "\n";
-		file << velocity.x << "\n";
-		file << velocity.y << "\n";
-		file << position.x << "\n";
-		file << position.y << "\n";
-		file << tag << "\n";
-		file << srcRect.x << "\n";
-		file << srcRect.y << "\n";
-		file << srcRect.w << "\n";
-		file << srcRect.h << "\n";
-	}
-	/*static GameObject* readGameObject(ifstream& file)
-	{
-		GameObject* temp = new GameObject();
-		GameObject* readObject(temp->readFromFile(file));
-		delete temp;
-		temp = nullptr;
-		return readObject;
-	}
-
-	virtual GameObject* readFromFile(ifstream& file)
-	{
-		char* path = _strdup(" ");
-		file >> path;
-		int health;
-		file >> health;
-		float angle;
-		file >> angle;
-		bool alive;
-		int temp; file >> temp; temp == 1 ? alive = true : alive = false;
-		int scale;
-		file >> scale;
-		int sheetWidth;
-		file >> sheetWidth;
-		int speed;
-		file >> speed;
-		Vector2D velocity;
-		file >> velocity.x;
-		file >> velocity.y;
-		Vector2D position;
-		file >> position.x;
-		file >> position.y;
-		int width;
-		file >> width;
-		int height;
-		file >> height;
-		string tag;
-		file >> tag;
-		bool hostile;
-		temp; file >> temp; temp == 1 ? hostile = true : hostile = false;
-		SDL_Rect srcRect;
-		file >> srcRect.x;
-		file >> srcRect.y;
-		GameObject* clone = new GameObject(path, position.x, position.y, width, height, scale, sheetWidth, angle, tag);
-		clone->velocity = velocity;
-		clone->health = health;
-		clone->alive = alive;
-		clone->speed = speed;
-		clone->hostile = hostile;
-		clone->srcRect.x = srcRect.x;
-		clone->srcRect.y = srcRect.y;
-		return clone;
-	}*/
-
-	GameObject(SDL_Renderer* renderer, const char* path, int x, int y, int w, int h, float angle, string tag, bool hasAnimations, float scale);
+	GameObject(SDL_Renderer* renderer, const char* path, int x, int y, int w, int h, float angle, string tag, bool hasAnimations, float scale, int health);
 	~GameObject();
-
-	//void nextSprite();
-
-	void setAlpha(int a) { SDL_SetTextureAlphaMod(textures[state]->tex, a); }
 
 	void setState(int s);
 	void setSpeed(int s) { speed = s; }
@@ -127,12 +55,20 @@ public:
 	{
 		if (!isInvinsible)
 		{
+			if (hasAnimations)
+			{
+				healthBar->shrinkBar(damage);
+				Mix_PlayChannel(-1, hitSound, 0);
+			}
 			if (health > damage)
 			{
 				health -= damage;
 				setState(HIT);
 			}
-			else { deathTimer++; if (!hasTag("Projectile")) setState(DEATH); }
+			else 
+			{
+				deathTimer++; if (!hasTag("Projectile")) setState(DEATH); 
+			}
 		}
 	}
 
@@ -144,6 +80,7 @@ public:
 
 	virtual void Update(SDL_Renderer* renderer) 
 	{
+		if (hasAnimations) healthBar->Update(collissionBox.x, collissionBox.y - 20);
 		if (deathTimer > 0)
 		{
 			deathTimer++;

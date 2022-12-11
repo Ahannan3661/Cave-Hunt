@@ -1,6 +1,5 @@
 #include "Game.h"
 #include "TextureManager.h"
-#include "GameObject.h"
 #include <string>
 #include <iostream>
 #include <string>
@@ -8,7 +7,6 @@
 #include <thread>
 #include <iostream>
 #include <fstream>
-#include "Constants.h"
 #include "Player.h"
 #include "Mushroom.h"
 #include "Goblin.h"
@@ -24,6 +22,10 @@ Game::Game()
 {
 	isRunning = true;
 	window = nullptr;
+	scoreDest.x = warnPos.x = 0;
+	scoreDest.y = warnPos.y = 0;
+	scoreDest.w = warnPos.w = 0;
+	scoreDest.h = warnPos.h = 0;
 }
 
 Game::~Game()
@@ -31,84 +33,26 @@ Game::~Game()
 
 }
 
-/*
-void Game::writeToFile()
-{
-	if (gameObjects.size() > 0)
-	{
-		ofstream file("data.txt");
-		file << frameCount << "\n";
-		file << bossWarning ? 1 : 0;
-		file << "\n";
-		file << bossArrived ? 1 : 0;
-		file << "\n";
-		for (int i = 0; i < gameObjects.size(); i++)
-		{
-			gameObjects[i]->writeToFile(file);
-		}
-		file << "END";
-	}
-}
-bool Game::is_empty(ifstream& file)
-{
-	return file.peek() == ifstream::traits_type::eof();
-}
-bool Game::readFromFile()
-{
-	ifstream file("data.txt");
-	if (!is_empty(file))
-	{
-		file >> frameCount;
-		int temp;
-		file >> temp;
-		temp == 1 ? bossWarning = true : bossWarning = false;
-		file >> temp;
-		temp == 1 ? bossArrived = true : bossArrived = false;
-		string dataType;
-		do
-		{
-			file >> dataType;
-			if (strcmp(dataType.c_str(), "[Player]") == 0) { player = Player::readPlayer(file); gameObjects.push_back(player);}
-			else if (strcmp(dataType.c_str(), "[Boss]") == 0)	gameObjects.push_back(Boss::readBoss(file));
-			else if (strcmp(dataType.c_str(), "[Bullet]") == 0)	gameObjects.push_back(Bullet::readBullet(file));
-			else if (strcmp(dataType.c_str(), "[Explosion]") == 0)	gameObjects.push_back(Explosion::readExplosion(file));
-			else if (strcmp(dataType.c_str(), "[Nimble]") == 0)	gameObjects.push_back(Nimble::readNimble(file));
-			else if (strcmp(dataType.c_str(), "[Ranger]") == 0)	gameObjects.push_back(Ranger::readRanger(file));
-			else if (strcmp(dataType.c_str(), "[Smoke]") == 0)	gameObjects.push_back(Smoke::readSmoke(file));
-		} while (strcmp(dataType.c_str(), "END") != 0);
-		return true;
-	}
-	return false;
-}
-*/
-
-struct MenuItem
-{
-	const char* label;
-	SDL_Rect pos;
-	SDL_Texture* texture;
-	bool isSelected = false;
-	SDL_Color color = { 0,0,0 };
-	int rows;
-	int cols;
-};
-
+//draws menu onto the screen
 int Game::showMenu(TTF_Font* font)
 {
 	Mix_PlayMusic(menuMusic, -1);
 
-	const Uint32 frameDelay = 60;
+	const Uint32 frameDelay = FPS;
 	Uint32 startTime, frameTime;
-	int x, y; //cursor position
-	const int NUMMENU = 2;
-	MenuItem menuItems[NUMMENU];
+
+	//to save cursor position coordinates
+	int x, y; 
+	
+	//array that contains all the items of our menu
+	MenuItem menuItems[2];
 	menuItems[0].label = "Play";
 	menuItems[1].label = "Exit";
 
 	SDL_Surface* tempSurface = NULL;
-	const SDL_Color colors[2] = { {0,0,0}, {0,255,0} };
 
-	for (int i = 0; i < NUMMENU; i++)
+	//initializing menuItems array
+	for (int i = 0; i < 2; i++)
 	{
 		tempSurface = TTF_RenderText_Solid(font, menuItems[i].label, menuItems[i].color);
 		menuItems[i].texture = SDL_CreateTextureFromSurface(renderer, tempSurface);
@@ -121,9 +65,11 @@ int Game::showMenu(TTF_Font* font)
 		SDL_FreeSurface(tempSurface);
 	}
 
-	SDL_Texture* buttonEdge = TextureManager::LoadTexture(renderer, "assets/Button Edge.png")->tex;
-	SDL_Texture* buttonCorner = TextureManager::LoadTexture(renderer, "assets/Button Corner.png")->tex;
-	SDL_Texture* buttonMiddle = TextureManager::LoadTexture(renderer, "assets/Button Middle.png")->tex;
+	//3 textures that are used to create buttons
+	SDL_Texture* buttonEdge = TextureManager::LoadTexture(renderer, BUTTONEDGE)->tex;
+	SDL_Texture* buttonCorner = TextureManager::LoadTexture(renderer, BUTTONCORNER)->tex;
+	SDL_Texture* buttonMiddle = TextureManager::LoadTexture(renderer, BUTTONMIDDLE)->tex;
+
 	SDL_Event event;
 	while (1)
 	{
@@ -134,7 +80,7 @@ int Game::showMenu(TTF_Font* font)
 			switch (event.type)
 			{
 			case SDL_QUIT:
-				for (int i = 0; i < NUMMENU; i++)
+				for (int i = 0; i < 2; i++)
 				{
 					SDL_DestroyTexture(menuItems[i].texture);
 				}
@@ -143,45 +89,32 @@ int Game::showMenu(TTF_Font* font)
 				SDL_DestroyTexture(buttonMiddle);
 				Mix_HaltMusic();
 				return 1;
+
+			//track cursor to highlight button when cursor is on it
 			case SDL_MOUSEMOTION:
 				x = event.motion.x;
 				y = event.motion.y;
-				for (int i = 0; i < NUMMENU; i++)
+				for (int i = 0; i < 2; i++)
 				{
 					if (x >= menuItems[i].pos.x && x <= menuItems[i].pos.x + (32 * menuItems[i].cols) && y >= menuItems[i].pos.y && y <= menuItems[i].pos.y + (32 * menuItems[i].rows))
 					{
-						if (!menuItems[i].isSelected)
-						{
-							menuItems[i].isSelected = true;
-							menuItems[i].color = colors[1];
-							tempSurface = TTF_RenderText_Solid(font, menuItems[i].label, menuItems[i].color);
-							SDL_DestroyTexture(menuItems[i].texture);
-							menuItems[i].texture = SDL_CreateTextureFromSurface(renderer, tempSurface);
-							SDL_FreeSurface(tempSurface);
-						}
+						if (!menuItems[i].isHighlighted)
+							menuItems[i].HighLight(renderer, true, font);
 					}
 					else
-					{
-						if (menuItems[i].isSelected)
-						{
-							menuItems[i].isSelected = false;
-							menuItems[i].color = colors[0];
-							tempSurface = TTF_RenderText_Solid(font, menuItems[i].label, menuItems[i].color);
-							SDL_DestroyTexture(menuItems[i].texture);
-							menuItems[i].texture = SDL_CreateTextureFromSurface(renderer, tempSurface);
-							SDL_FreeSurface(tempSurface);
-						}
-					}
+						if (menuItems[i].isHighlighted)
+							menuItems[i].HighLight(renderer, false, font);
 				}
 				break;
+			//return the value corresponding the button that was pressed
 			case SDL_MOUSEBUTTONDOWN:
 				x = event.button.x;
 				y = event.button.y;
-				for (int i = 0; i < NUMMENU; i++)
+				for (int i = 0; i < 2; i++)
 					if (x >= menuItems[i].pos.x && x <= menuItems[i].pos.x + (32 * menuItems[i].cols) && y >= menuItems[i].pos.y && y <= menuItems[i].pos.y + (32 * menuItems[i].rows))
 					{
 						Mix_PlayChannel(-1, buttonSound, 0);
-						for (int i = 0; i < NUMMENU; i++)
+						for (int i = 0; i < 2; i++)
 						{
 							SDL_DestroyTexture(menuItems[i].texture);
 						}
@@ -195,7 +128,7 @@ int Game::showMenu(TTF_Font* font)
 			case SDL_KEYDOWN:
 				if (event.key.keysym.sym == SDLK_ESCAPE)
 				{
-					for (int i = 0; i < NUMMENU; i++)
+					for (int i = 0; i < 2; i++)
 					{
 						SDL_DestroyTexture(menuItems[i].texture);
 					}
@@ -209,94 +142,11 @@ int Game::showMenu(TTF_Font* font)
 		}
 		SDL_RenderClear(renderer);
 
-		for (int i = 0; i < NUMMENU; i++)
+		bg->Render(renderer);
+
+		for (int i = 0; i < 2; i++)
 		{
-			for (int j = 0; j < menuItems[i].rows; j++)
-			{
-				for (int k = 0; k < menuItems[i].cols; k++)
-				{
-					SDL_Rect dest;
-					if (j == 0 && k == 0)
-					{
-						dest.x = menuItems[i].pos.x;
-						dest.y = menuItems[i].pos.y;
-						dest.w = 32;
-						dest.h = 32;
-						SDL_RenderCopyEx(renderer, buttonCorner, NULL, &dest, 180.0f, NULL, SDL_FLIP_NONE);
-					}
-					else if (j == menuItems[i].rows - 1 && k == menuItems[i].cols - 1)
-					{
-						dest.x = menuItems[i].pos.x + 32 * j;
-						dest.y = menuItems[i].pos.y + 32 * k;
-						dest.w = 32;
-						dest.h = 32;
-						SDL_RenderCopyEx(renderer, buttonCorner, NULL, &dest, 0.0f, NULL, SDL_FLIP_NONE);
-					}
-					else if (j == menuItems[i].rows - 1 && k == 0)
-					{
-						dest.x = menuItems[i].pos.x;
-						dest.y = menuItems[i].pos.y + 32 * j;
-						dest.w = 32;
-						dest.h = 32;
-						SDL_RenderCopyEx(renderer, buttonCorner, NULL, &dest, 90.0f, NULL, SDL_FLIP_NONE);
-					}
-					else if (j == 0 && k == menuItems[i].cols - 1)
-					{
-						dest.x = menuItems[i].pos.x + 32 * k;
-						dest.y = menuItems[i].pos.y;
-						dest.w = 32;
-						dest.h = 32;
-						SDL_RenderCopyEx(renderer, buttonCorner, NULL, &dest, -90.0f, NULL, SDL_FLIP_NONE);
-					}
-					else if (j == 0 && k != 0 && k != menuItems[i].cols - 1)
-					{
-						dest.x = menuItems[i].pos.x + 32 * k;
-						dest.y = menuItems[i].pos.y;
-						dest.w = 32;
-						dest.h = 32;
-						SDL_RenderCopyEx(renderer, buttonEdge, NULL, &dest, 180.0f, NULL, SDL_FLIP_NONE);
-					}
-					else if (j == menuItems[i].rows - 1 && k != 0 && k != menuItems[i].cols - 1)
-					{
-						dest.x = menuItems[i].pos.x + 32 * k;
-						dest.y = menuItems[i].pos.y + 32 * j;
-						dest.w = 32;
-						dest.h = 32;
-						SDL_RenderCopyEx(renderer, buttonEdge, NULL, &dest, 0.0f, NULL, SDL_FLIP_NONE);
-					}
-					else if (j != 0 && j != menuItems[i].rows - 1 && k == 0)
-					{
-						dest.x = menuItems[i].pos.x;
-						dest.y = menuItems[i].pos.y + 32 * j;
-						dest.w = 32;
-						dest.h = 32;
-						SDL_RenderCopyEx(renderer, buttonEdge, NULL, &dest, 90.0f, NULL, SDL_FLIP_NONE);
-					}
-					else if (j != 0 && j != menuItems[i].rows - 1 && k == menuItems[i].cols - 1)
-					{
-						dest.x = menuItems[i].pos.x + 32 * k;
-						dest.y = menuItems[i].pos.y + 32 * j;
-						dest.w = 32;
-						dest.h = 32;
-						SDL_RenderCopyEx(renderer, buttonEdge, NULL, &dest, -90.0f, NULL, SDL_FLIP_NONE);
-					}
-					else
-					{
-						dest.x = menuItems[i].pos.x + 32 * k;
-						dest.y = menuItems[i].pos.y + 32 * j;
-						dest.w = 32;
-						dest.h = 32;
-						SDL_RenderCopyEx(renderer, buttonMiddle, NULL, &dest, 0.0f, NULL, SDL_FLIP_NONE);
-					}
-
-				}
-			}
-
-			SDL_Rect menuItemDest = menuItems[i].pos;
-
-			menuItemDest.x += (menuItems[i].rows * 32 - menuItems[i].pos.w) / 2;
-			menuItemDest.y += (menuItems[i].cols * 32 - menuItems[i].pos.h) / 2;
-			SDL_RenderCopy(renderer, menuItems[i].texture, NULL, &menuItemDest);
+			menuItems[i].DrawMenuItem(renderer, buttonCorner, buttonEdge, buttonMiddle);
 		}
 
 		SDL_RenderPresent(renderer);
@@ -308,7 +158,6 @@ int Game::showMenu(TTF_Font* font)
 			SDL_Delay(frameDelay - frameTime);
 		}
 	}
-
 }
 
 bool Game::checkCollission(GameObject* obj1, GameObject* obj2)
@@ -320,20 +169,6 @@ bool Game::checkCollission(GameObject* obj1, GameObject* obj2)
 		return true;
 	return false;
 }
-
-/*
-void Game::generateExplosion(Vector2D& pos)
-{
-	Mix_PlayChannel(-1, explosionSound, 0);
-	for (int i = 0 ; i < 100 ; i++)
-	{
-		int speed = rand() % 5 + 1;
-		int angle = rand() % 360;
-		int scale = 1 / ((rand() % 5)+1);
-		int life = (rand() % 60) + 1;
-		gameObjects.push_back(new Explosion("assets/explosion.png", pos.x + 32, pos.y + 32, 16, 16, scale, 16, angle, speed, life));
-	}
-}*/
 
 void Game::init(const char* title, int xpos, int ypos, int width, int height)
 {
@@ -398,7 +233,7 @@ void Game::init(const char* title, int xpos, int ypos, int width, int height)
 			}
 		}
 	}
-	font = TTF_OpenFont("assets/times new roman.ttf", 28);
+	font = TTF_OpenFont(FONT, FONT_SIZE);
 	if (font == NULL)
 	{
 		printf("Failed to load font! SDL_ttf Error: %s\n", TTF_GetError());
@@ -406,27 +241,26 @@ void Game::init(const char* title, int xpos, int ypos, int width, int height)
 	}
 	if (success)
 	{
+		menuMusic = Mix_LoadMUS(MENUMUSIC);
+		buttonSound = Mix_LoadWAV(BUTTONSOUND);
 
-		//if (!readFromFile())
-		//{
-
-		menuMusic = Mix_LoadMUS("sounds/Menu.mp3");
-		buttonSound = Mix_LoadWAV("sounds/Button.wav");
+		bg = new BackGround(renderer);
 
 		userChoice = showMenu(font);
 
-		gameMusic = Mix_LoadMUS("sounds/Game.mp3");
+		gameMusic = Mix_LoadMUS(GAMEMUSIC);
 
 		if (userChoice == 1) isRunning = false;
 		else
 		{
 			isRunning = true;
 			Mix_PlayMusic(gameMusic, -1);
-			bg = new BackGround(renderer);
-			player = new Player(renderer, "assets/player", 100, PLATFORM_HEIGHT - playerSpriteOffsetY - playerSpriteH, 231, 190, 0.0f, "Player", true, 1);
+			player = new Player(renderer, PLAYER, PLAYER_SPAWNX, PLAYER_SPAWNY, playerSourceW, playerSourceH, 0.0f, "Player", true, playerScale, playerHealth);
 			gameObjects.push_back(player);
+			skullTexture = TextureManager::LoadTexture(renderer, SKULL);
+			bossArrivalSound = Mix_LoadWAV(BOSSARRIVALSOUND);
+			playerJumpSound = Mix_LoadWAV(PLAYERJUMPSOUND);
 		}
-		//}
 	}
 	else isRunning = false;
 }
@@ -445,14 +279,12 @@ void Game::handleEvents()
 		case SDLK_a:
 			player->setState(IDLE);
 			player->Translate(0, 0);
-			//player->setFlip(SDL_FLIP_NONE);
 			break;
 		case SDLK_d:
 			player->setState(IDLE);
 			player->Translate(0, 0);
 			break;
 		case SDLK_SPACE:
-			//player->setState(IDLE);
 			break;
 		default:
 			break;
@@ -462,10 +294,7 @@ void Game::handleEvents()
 		switch (event.key.keysym.sym)
 		{
 		case SDLK_w:
-			if (!player->isJumping && player->state != DEATH) { player->Translate(player->velocity.x, jumpVel); player->isJumping = true; };
-			break;
-		case SDLK_s:
-			//((Player*)player)->Translate(0.0f, 6);
+			if (!player->isJumping && player->state != DEATH) { player->Translate(player->velocity.x, jumpVel); player->isJumping = true; Mix_PlayChannel(-1, playerJumpSound, 0);}
 			break;
 		case SDLK_a:
 			if (player->state != DEATH)
@@ -488,9 +317,6 @@ void Game::handleEvents()
 			player->Translate(0, 0);
 			if (!((Player*)player)->OnCoolDown() && player->state != ATTACKING) { player->setState(ATTACKING); }
 			break;
-		case SDLK_b:
-			//if (!((Player*)player)->OnCoolDown() && ((Player*)player)->hasMissile()) gameObjects.push_back(((Player*)player)->Shoot(true));
-			break;
 		default:
 			break;
 		}
@@ -502,12 +328,22 @@ void Game::handleEvents()
 void Game::update()
 {
 	frameCount++;
+
+	scoreSurface = TTF_RenderText_Solid(font, to_string(((Player*)gameObjects.at(0))->score).c_str(), { 0,0,0 });
+	scoreTexture = SDL_CreateTextureFromSurface(renderer, scoreSurface);
+	scoreDest.w = scoreSurface->clip_rect.w;
+	scoreDest.h = scoreSurface->clip_rect.h;
+	scoreDest.x = SCREEN_WIDTH - scoreDest.w;
+	scoreDest.y = 0;
+	SDL_FreeSurface(scoreSurface);
+	scoreSurface = nullptr;
+
 	if (warningTimer > -2) warningTimer--;
 	if (warningTimer == -1) 
 	{
-		SDL_DestroyTexture(warntexture);
+		SDL_DestroyTexture(warnTexture);
 
-		gameObjects.push_back(new Boss(renderer, "assets/monsters/boss", SCREEN_WIDTH - 100, PLATFORM_HEIGHT - ((bossSpriteOffsetY + bossSpriteH) * 1.5), 160, 128, 0, "Boss", true, 380, 1.5));
+		gameObjects.push_back(new Boss(renderer, BOSS, MONSTER_SPAWNX, BOSS_SPAWNY, bossSourceW, bossSourceH, 0.0f, "Boss", true, bossAttackRange, monsterScale ,bossHealth));
 
 		bossArrived = true;
 	} 
@@ -515,12 +351,13 @@ void Game::update()
 	{
 		warningTimer = bossWarningTimer;
 		SDL_Surface* warnSurface = TTF_RenderText_Solid(font, "!!!!!", { 255, 0, 0 });
-		warntexture = SDL_CreateTextureFromSurface(renderer, warnSurface);
+		warnTexture = SDL_CreateTextureFromSurface(renderer, warnSurface);
 		warnPos.w = warnSurface->w;
 		warnPos.h = warnSurface->h;
 		SDL_FreeSurface(warnSurface);
 		warnPos.x = SCREEN_WIDTH / 2 - warnPos.w / 2;
 		warnPos.y = SCREEN_HEIGHT / 2 - warnPos.h / 2;
+		Mix_PlayChannel(-1, bossArrivalSound, 0);
 	}
 
 	if (((Player*)player)->score < BOSS_ARRIVAL_SCORE)
@@ -530,15 +367,15 @@ void Game::update()
 			int random = rand() % 3;
 			if (random == 1)
 			{
-				gameObjects.push_back(new Mushroom(renderer, "assets/monsters/mushroom", SCREEN_WIDTH - 100, PLATFORM_HEIGHT - ((monsterSpriteOffsetY + monsterSpriteH) * 1.5), 150, 150, 0, "Enemy", true, 200, 1.5));
+				gameObjects.push_back(new Mushroom(renderer, MUSHROOM, MONSTER_SPAWNX, MONSTER_SPAWNY, monsterSourceW, monsterSourceH, 0.0f, "Enemy", true, mushroomAttackRange, monsterScale, monsterHealth));
 			}
 			else if(random == 0)
 			{
-				gameObjects.push_back(new DarkWiz(renderer, "assets/monsters/darkWiz", SCREEN_WIDTH - 100, PLATFORM_HEIGHT - ((darkWizSpriteOffsetY + darkWizSpriteH) * 1.5), 250, 250, 0, "Enemy", true, 300, 1.5));
+				gameObjects.push_back(new DarkWiz(renderer, GOBLIN, MONSTER_SPAWNX, DARKWIZ_SPAWNY, darkWizSourceW, darkWizSourceH, 0.0f, "Enemy", true, darWizAttackRange, monsterScale, monsterHealth));
 			}
 			else if (random == 2)
 			{
-				gameObjects.push_back(new Goblin(renderer, "assets/monsters/goblin", SCREEN_WIDTH - 100, PLATFORM_HEIGHT - ((monsterSpriteOffsetY + monsterSpriteH) * 1.5), 150, 150, 0, "Enemy", true, 100, 1.5, 5));
+				gameObjects.push_back(new Goblin(renderer, DARKWIZ, MONSTER_SPAWNX, MONSTER_SPAWNY, monsterSourceW, monsterSourceH, 0.0f, "Enemy", true, goblinAttackRange, monsterScale, meeleMonsterDamage, monsterHealth));
 			}
 		}
 	}
@@ -548,7 +385,12 @@ void Game::update()
 		{
 			for (int i = 1; i < gameObjects.size(); i++)
 			{
-				if (gameObjects.at(i)->Alive()) gameObjects.at(i)->Destroy();
+				if (gameObjects.at(i)->Alive())
+				{
+					delete gameObjects.at(i);
+					gameObjects[i] = nullptr;
+					gameObjects.erase(gameObjects.begin() + i);
+				}
 			}
 		}
 		bossWarning = true;
@@ -575,8 +417,10 @@ void Game::update()
 					{
 						if (gameObjects.at(i)->Alive()) gameObjects.at(i)->Destroy();
 					}
+					SDL_DestroyTexture(scoreTexture);
+					scoreTexture = nullptr;
 					isRunning = true;
-					player = new Player(renderer, "assets/player", 100, PLATFORM_HEIGHT - playerSpriteOffsetY - playerSpriteH, 231, 190, 0.0f, "Player", true, 1);
+					player = new Player(renderer, PLAYER, PLAYER_SPAWNX, PLAYER_SPAWNY, playerSourceW, playerSourceH, 0.0f, "Player", true, playerScale, playerHealth);
 					gameObjects.push_back(player);
 					bossWarning = false;
 					bossArrived = false;
@@ -588,7 +432,7 @@ void Game::update()
 			}
 			else if (i == 0) isRunning = false;
 			delete gameObjects.at(i);
-			gameObjects[i] = NULL;
+			gameObjects[i] = nullptr;
 			gameObjects.erase(gameObjects.begin() + i);
 		}
 	}
@@ -600,9 +444,14 @@ void Game::render()
 
 	bg->Render(renderer);
 
+	SDL_RenderCopy(renderer, scoreTexture, NULL, &scoreDest);
+	scoreDest.x -= skullTexture->srcRect.w;
+	scoreDest.w = skullTexture->srcRect.w;
+	SDL_RenderCopy(renderer, skullTexture->tex, NULL, &scoreDest);
+
 	if (warningTimer > 0)
 	{
-		SDL_RenderCopy(renderer, warntexture, NULL, &warnPos);
+		SDL_RenderCopy(renderer, warnTexture, NULL, &warnPos);
 	}
 
 	for (int i = 0; i < gameObjects.size(); i++)
@@ -626,6 +475,10 @@ void Game::clean()
 	gameMusic = NULL;
 	Mix_FreeChunk(buttonSound);
 	buttonSound = NULL;
+	Mix_FreeChunk(bossArrivalSound);
+	bossArrivalSound = NULL;
+	Mix_FreeChunk(playerJumpSound);
+	playerJumpSound = NULL;
 	TTF_CloseFont(font);
 	SDL_DestroyWindow(window);
 	SDL_DestroyRenderer(renderer);

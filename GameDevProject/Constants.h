@@ -1,91 +1,209 @@
 #pragma once
+#include <SDL.h>
 
 //Screen dimension constants
-const int SCREEN_WIDTH = 640;
-const int SCREEN_HEIGHT = 480;
-const int PLATFORM_HEIGHT = 380;
+extern int SCREEN_WIDTH;
+extern int SCREEN_HEIGHT;
+extern int PLATFORM_HEIGHT;
 
-const int BOSS_ARRIVAL_SCORE = 10;
-const int bossWarningTimer = 160;
+//number of items in menu
+extern int NUM_MENU_ITEMS;
+
+//font size
+extern int FONT_SIZE;
+
+//menu item colors
+extern SDL_Color colors[2];
+
+extern int BOSS_ARRIVAL_SCORE;
+extern int bossWarningTimer;
 
 //Frame rate
-const int FPS = 60;
+extern int FPS;
 
 //Time between each frame
-const int frameDelay = 1000 / FPS;
+extern int frameDelay;
 
 //friction in game
-const float friction = 0.95f;
-
-//value of pi
-const double pi = 3.14159265358979323846;
+extern float friction;
 
 //player constants
-const int totalSpellCount = 10;
-const int totalCastingCooldown = 40;
-const int totalSpellReloadTime = 120;
+extern int totalSpellCount;
+extern int totalCastingCooldown;
+extern int totalSpellReloadTime;
 
 //Game Object state constants
-const int IDLE = 0;
-const int RUNNING = 1;
-const int ATTACKING = 2;
-const int HIT = 3;
-const int DEATH = 4;
+extern int IDLE;
+extern int RUNNING;
+extern int ATTACKING;
+extern int HIT;
+extern int DEATH;
 
 //Sprite change time
-const int totalSpriteTime = 5;
-const int totalSpellSpriteTime = 10;
+extern int totalSpriteTime;
+extern int totalSpellSpriteTime;
 
 //delete after death time
-const int totalPlayerDeathTime = 120;
-const int totalEnemyDeathTime = 120;
-const int totalProjectileDeathTime = 0;
+extern int totalPlayerDeathTime;
+extern int totalEnemyDeathTime;
+extern int totalProjectileDeathTime;
 
 //attck constants
-const int totalAttackTime = 120;
-const int totalEnemyAttackTime = 200;
+extern int totalAttackTime;
+extern int totalEnemyAttackTime;
 
-//player jump velocity
-const int jumpVel = -25;
+//player constants
+extern int jumpVel;
+extern int playerHealth;
+extern int playerSourceW;
+extern int playerSourceH;
+extern int playerScale;
+extern int playerProjDamage ;
+extern int playerSpeed;
 
 //the offset of player's sprites actual location
-const int playerSpriteOffsetX = 85;
-const int playerSpriteOffsetY = 50;
-const int playerSpriteW = 65;
-const int playerSpriteH = 90;
+extern int playerSpriteOffsetX;
+extern int playerSpriteOffsetY;
+extern int playerSpriteW;
+extern int playerSpriteH;
 
-//the offset of monsters' sprites actual location
-const int monsterSpriteOffsetX = 55;
-const int monsterSpriteOffsetY = 50;
-const int monsterSpriteW = 35;
-const int monsterSpriteH = 50;
+//monster Constants
+extern int monsterSpriteOffsetX;
+extern int monsterSpriteOffsetY;
+extern int monsterSpriteW;
+extern int monsterSpriteH;
+extern float monsterScale;
+extern int monsterSourceW;
+extern int monsterSourceH;
+extern int skeletonAttackRange;
+extern int skeletonGuardRange;
+extern int totalGuardDuration;
+extern int meeleMonsterDamage;
+extern int eyeAttackRange;
+extern int mushroomAttackRange;
+extern int goblinAttackRange;
 
-//the offset of DarkWiz sprites actual location
-const int darkWizSpriteOffsetX = 100;
-const int darkWizSpriteOffsetY = 100;
-const int darkWizSpriteW = 55;
-const int darkWizSpriteH = 65;
+extern int enemyMoveSpeed;
+extern int monsterHealth;
 
-//the offset of worm sprites actual location
-const int wormSpriteOffsetX = 15;
-const int wormSpriteOffsetY = 15;
-const int wormSpriteW = 60;
-const int wormSpriteH = 50;
+//DarkWiz constants
+extern int darkWizSpriteOffsetX;
+extern int darkWizSpriteOffsetY;
+extern int darkWizSpriteW;
+extern int darkWizSpriteH;
+extern int darkWizSourceW;
+extern int darkWizSourceH;
+extern int darWizAttackRange;
 
-//the offset of boss sprites actual location
-const int bossSpriteOffsetX = 55;
-const int bossSpriteOffsetY = 60;
-const int bossSpriteW = 50;
-const int bossSpriteH = 60;
+//Worm constants
+extern int wormSpriteOffsetX;
+extern int wormSpriteOffsetY;
+extern int wormSpriteW;
+extern int wormSpriteH;
+extern int wormSourceW;
+extern int wormSourceH;
+extern int wormAttackRange;
 
 //boss constants
-const int bossAttackTime = 1000;
+extern int bossAttackTime;
+extern int bossHealth;
+extern int bossSourceW;
+extern int bossSourceH;
+extern int bossAttackRange;
 
-//skeleton guard duration
-const int totalGuardDuration = 120;
+//the offset of boss sprites actual location
+extern int bossSpriteOffsetX;
+extern int bossSpriteOffsetY;
+extern int bossSpriteW;
+extern int bossSpriteH;
 
 //player movement limts
-const int playerLimit = 150;
+extern int playerLimit;
 
-//background image dimensions
-const int backgroundWidth = 1137;
+//background constants
+extern int backgroundWidth;
+extern int l1MoveSpeed;
+extern int l2MoveSpeed;
+extern int l3MoveSpeed;
+extern int l4MoveSpeed;
+extern int l5MoveSpeed;
+
+//projectile constants
+extern int projMoveSpeed;
+extern int projHealth;
+extern int hostileProjDamage;
+extern int projDamage;
+extern int projW;
+extern int projH;
+extern int projScale;
+
+//HealthBar constants
+extern float barToFillRatio;
+
+//button sprite constants
+extern int buttonSpriteW;
+extern int buttonSpriteH;
+
+//cloud constants
+extern int cloudW;
+extern int cloudH;
+extern float cloudScale;
+
+//thunder bolt constants
+extern int boltW;
+extern int boltH;
+extern float boltScale;
+extern float boltAngle;
+
+//sprite paths
+extern const char* POISONBALL;
+extern const char* EYE;
+extern const char* SKELETON;
+extern const char* SKELETON_SHIELD;
+extern const char* WORM;
+extern const char* TUNDERCLOUD;
+extern const char* THUNDERBOLT;
+extern const char* EYESPELL;
+extern const char* FIREBALL;
+extern const char* BOSS;
+extern const char* MUSHROOM;
+extern const char* GOBLIN;
+extern const char* DARKWIZ;
+extern const char* PLAYER;
+extern const char* PLAYERSPELL;
+extern const char* SKULL;
+extern const char* HEALTHBAR;
+extern const char* HEALTHFILL;
+extern const char* MENUMUSIC;
+extern const char* BUTTONSOUND;
+extern const char* GAMEMUSIC;
+extern const char* SKY;
+extern const char* DOWNLAYER;
+extern const char* MIDDLELAYER;
+extern const char* LIGHT;
+extern const char* TOPLAYER;
+extern const char* BOSSARRIVALSOUND;
+extern const char* YOUWINSOUND;
+extern const char* YOULOSESOUND;
+extern const char* PLAYERSPELLSOUND;
+extern const char* PLAYERJUMPSOUND;
+extern const char* BOSSATTACKSOUND;
+extern const char* HITSOUND;
+extern const char* MEELEATTACKSOUND;
+extern const char* SPELLSOUND;
+extern const char* BUTTONCORNER;
+extern const char* BUTTONEDGE;
+extern const char* BUTTONMIDDLE;
+extern const char* FONT;
+
+//enemy spawn locations
+extern int MONSTER_SPAWNX;
+extern int MONSTER_SPAWNY;
+extern int WORM_SPAWNY;
+extern int CLOUD_SPAWNY;
+extern int EYE_SPAWNX;
+extern int EYE_SPAWNY;
+extern int BOSS_SPAWNY;
+extern int DARKWIZ_SPAWNY;
+extern int PLAYER_SPAWNX;
+extern int PLAYER_SPAWNY;

@@ -7,15 +7,16 @@ using namespace std;
 
 class Skeleton : public Enemy
 {
+private:
+	Mix_Chunk* skeletonAttackSound = NULL;
 public:
-	//bool hitRegistered = false;
 	int damage;
 	texStruct* shield;
 	int attackRange;
 	bool isGuarding = false;
 	int guardDuration = totalGuardDuration;
 
-	Skeleton(SDL_Renderer* renderer, const char* path, int x, int y, int w, int h, float angle, string tag, bool hasAnimations, int range, float scale, int damage) : Enemy(renderer, path, x, y, w, h, angle, tag, hasAnimations, range, scale)
+	Skeleton(SDL_Renderer* renderer, const char* path, int x, int y, int w, int h, float angle, string tag, bool hasAnimations, int range, float scale, int damage, int health) : Enemy(renderer, path, x, y, w, h, angle, tag, hasAnimations, range, scale, health)
 	{
 		this->damage = damage;
 		totalDeathTime = totalEnemyDeathTime;
@@ -25,51 +26,34 @@ public:
 		collissionBox.y += monsterSpriteOffsetY;
 		collissionBox.w = monsterSpriteW * scale;
 		collissionBox.h = monsterSpriteH * scale;
-		attackRange = 120;
-		shield = TextureManager::LoadTexture(renderer, "assets/monsters/skeleton/shield.png");
-		setHealth(20);
-		setSpeed(2);
+		attackRange = skeletonAttackRange;
+		shield = TextureManager::LoadTexture(renderer, SKELETON_SHIELD);
+		healthBar->Update(collissionBox.x, collissionBox.y - 20);
+		skeletonAttackSound = Mix_LoadWAV(MEELEATTACKSOUND);
 	}
 	~Skeleton()
 	{
+		Mix_FreeChunk(skeletonAttackSound);
+		skeletonAttackSound = NULL;
 		delete shield;
 		shield = nullptr;
 	}
-	/*
-	static GameObject* readNimble(ifstream& file)
-	{
-		Nimble* temp = new Nimble();
-		GameObject* readObject = temp->readFromFile(file);
-		delete temp;
-		temp = nullptr;
-		return readObject;
-	}
-	GameObject* readFromFile(ifstream& file) override
-	{
-		GameObject* clone = GameObject::readGameObject(file);
-		Nimble* readNimble = new Nimble(clone->path, clone->position.x, clone->position.y, clone->width, clone->health, clone->scale, clone->sheetWidth);
-		readNimble->velocity = clone->velocity;
-		delete clone;
-		clone = nullptr;
-		file >> readNimble->shootingCooldown;
-		file >> readNimble->dodgingCoolDown;
-		return readNimble;
-	}
-	void writeToFile(ofstream& file) override
-	{
-		file << "[Nimble]\n";
-		GameObject::writeToFile(file);
-		file << shootingCooldown << "\n";
-		file << dodgingCoolDown << "\n";
-	}*/
 	void Update(SDL_Renderer* renderer) override
 	{
 		Enemy::Update(renderer);
 		if (state == DEATH) Game::skeletonKilled = true;
-		if (isGuarding && state == ATTACKING) { guardDuration--; isInvinsible = true;}
+		if (isGuarding && state == ATTACKING)
+		{
+			isInvinsible = true;
+		}
+		if (isGuarding)
+		{
+			guardDuration--;
+		}
 		if (isInRange(range) && !isInRange(attackRange) && state == ATTACKING && !isGuarding)
 		{
 			isGuarding = true;
+			guardDuration = totalGuardDuration;
 			texStruct* temp = textures[ATTACKING];
 			textures[ATTACKING] = shield;
 			shield = temp;
@@ -77,12 +61,14 @@ public:
 		if (isInRange(attackRange) && state == ATTACKING && isGuarding)
 		{
 			isGuarding = false;
+			isInvinsible = false;
 			texStruct* temp = textures[ATTACKING];
 			textures[ATTACKING] = shield;
 			shield = temp;
 		}
 		if (state == ATTACKING && srcRect.x == sheetWidth - srcRect.w && !isGuarding)
 		{
+			Mix_PlayChannel(-1, skeletonAttackSound, 0);
 			if (isInRange(attackRange))
 			{
 				Game::gameObjects[0]->takeHit(damage);
@@ -90,22 +76,16 @@ public:
 			attackTime = totalEnemyAttackTime;
 			setState(IDLE);
 		}
-		if (state == ATTACKING && guardDuration <= 0)
+		if (guardDuration <= 0)
 		{
+			isGuarding = false;
+			texStruct* temp = textures[ATTACKING];
+			textures[ATTACKING] = shield;
+			shield = temp;
 			isInvinsible = false;
 			guardDuration = totalGuardDuration;
 			attackTime = totalAttackTime;
 			setState(IDLE);
 		}
 	}
-	/*void Attack(SDL_Renderer* renderer) override
-	{
-		if (state == ATTACKING && srcRect.x == sheetWidth - srcRect.w)
-		{
-			Game::gameObjects.push_back(new PoisonBall(renderer, "assets/monsters/mushroom/poisonBall.png", position.x - monsterSpriteOffsetX - monsterSpriteW, position.y + monsterSpriteOffsetY, 32, 32, 0.0f, "PoisonBall", false, 5, -1));
-			spriteTime = 0;
-			attackTime = totalAttackTime;
-		}
-	}*/
-	bool OnCoolDown();
 };

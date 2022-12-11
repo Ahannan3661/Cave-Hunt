@@ -11,6 +11,8 @@
 #include <iostream>
 #include <fstream>
 #include "BackGround.h"
+#include "MenuItem.h"
+#include "Constants.h"
 
 class GameObject;
 
@@ -37,7 +39,11 @@ public:
 	static bool skeletonKilled;
 
 private:
-	SDL_Texture* warntexture = nullptr;
+	texStruct* skullTexture = nullptr;
+	SDL_Texture* scoreTexture = nullptr;
+	SDL_Rect scoreDest;
+	SDL_Surface* scoreSurface = nullptr;
+	SDL_Texture* warnTexture = nullptr;
 	SDL_Rect warnPos;
 	int warningTimer = -2;
 	BackGround* bg = nullptr;
@@ -47,6 +53,8 @@ private:
 	Mix_Music* menuMusic = NULL;
 	Mix_Music* gameMusic = NULL;
 	Mix_Chunk* buttonSound = NULL;
+	Mix_Chunk* bossArrivalSound = NULL;
+	Mix_Chunk* playerJumpSound = NULL;
 	int userChoice = -1;
 	Uint32 frameCount = 0;
 	bool isRunning;

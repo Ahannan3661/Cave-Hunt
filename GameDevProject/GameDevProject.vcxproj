@@ -132,6 +132,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Constants.cpp" />
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="CaveHunt.cpp" />
     <ClCompile Include="GameObject.cpp" />
@@ -150,7 +151,9 @@
     <ClInclude Include="Game.h" />
     <ClInclude Include="GameObject.h" />
     <ClInclude Include="Goblin.h" />
+    <ClInclude Include="HealthBar.h" />
     <ClInclude Include="Layer.h" />
+    <ClInclude Include="MenuItem.h" />
     <ClInclude Include="Mushroom.h" />
     <ClInclude Include="Player.h" />
     <ClInclude Include="Projectile.h" />

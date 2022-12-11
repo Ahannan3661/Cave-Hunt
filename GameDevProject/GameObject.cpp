@@ -1,10 +1,10 @@
 #include "GameObject.h"
-#include "TextureManager.h"
 
-GameObject::GameObject(SDL_Renderer* renderer, const char* path, int x, int y, int w, int h, float angle, string tag, bool hasAnimations, float scale)
+GameObject::GameObject(SDL_Renderer* renderer, const char* path, int x, int y, int w, int h, float angle, string tag, bool hasAnimations, float scale, int health)
 {
 	this->hasAnimations = hasAnimations;
 	this->scale = scale;
+	this->health = health;
 	flipStatus = SDL_FLIP_NONE;
 	if (hasAnimations)
 	{
@@ -29,6 +29,7 @@ GameObject::GameObject(SDL_Renderer* renderer, const char* path, int x, int y, i
 		strcpy_s(temp, sizeof temp, path);
 		strcat_s(temp, sizeof temp, "/death.png");
 		textures.push_back(TextureManager::LoadTexture(renderer, temp));
+		hitSound = Mix_LoadWAV(HITSOUND);
 	} 
 	else
 	{
@@ -41,8 +42,6 @@ GameObject::GameObject(SDL_Renderer* renderer, const char* path, int x, int y, i
 	this->position.y = y*1.0f;
 	this->angle = angle;
 	this->tag = tag;
-	//if(hasTag("Smoke"))
-		//SDL_SetTextureBlendMode(this->texture, SDL_BLENDMODE_BLEND);
 	srcRect.x = srcRect.y = 0;
 	srcRect.w = w;
 	srcRect.h = h;
@@ -51,8 +50,11 @@ GameObject::GameObject(SDL_Renderer* renderer, const char* path, int x, int y, i
 	destRect.w = w * scale;
 	destRect.h = h * scale;
 	collissionBox = destRect;
-	health = 1;
 	velocity.Zero();
+	if (hasAnimations && healthBar == nullptr)
+	{
+		healthBar = new HealthBar(renderer, HEALTHBAR, collissionBox.x, collissionBox.y - 20, health);
+	}
 }
 
 void GameObject::setState(int s)
@@ -90,21 +92,25 @@ void GameObject::UpdateCollissionBox()
 
 GameObject::~GameObject()
 {
+	Mix_FreeChunk(hitSound);
+	hitSound = NULL;
 	for (int i = 0;i < textures.size(); i++)
 	{
 		SDL_DestroyTexture(textures[i]->tex);
 		delete textures.at(i);
 		textures.erase(textures.begin() + i);
 	}
+	if (healthBar != nullptr)
+	{
+		delete healthBar;
+		healthBar = nullptr;
+	}
 }
 
 void GameObject::Render(SDL_Renderer* renderer)
 {
-	//if(hasTag("Smoke"))
-		//TextureManager::Draw1(texture, srcRect, destRect, angle);
-	//else
-
 	TextureManager::Draw(renderer, textures[state]->tex, srcRect, destRect, angle, flipStatus);
+	if (hasAnimations) healthBar->Render(renderer);
 	//SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
 	//SDL_RenderDrawRect(renderer, &collissionBox);
 	//SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255);

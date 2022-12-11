@@ -1,5 +1,4 @@
 #pragma once
-#include "SDL.h"
 #include "TextureManager.h"
 
 class Layer
