@@ -16,7 +16,7 @@
 //menu item colors
  SDL_Color colors[2] = { {0,0,0}, {0,255,0} };
 
- int BOSS_ARRIVAL_SCORE = 0;
+ int BOSS_ARRIVAL_SCORE = 10;
  int bossWarningTimer = 160;
 
 //Frame rate
