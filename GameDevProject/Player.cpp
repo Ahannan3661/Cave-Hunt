@@ -12,7 +12,6 @@ Player::Player(SDL_Renderer* renderer, const char* path, int x, int y, int w, in
 	setSpeed(playerSpeed);
 	spriteTime = totalSpriteTime;
 	score = 0;
-	spellCount = totalSpellCount;
 	castingCooldown = totalCastingCooldown;
 	velocity.Zero();
 	healthBar->Update(collissionBox.x, collissionBox.y - 20);
@@ -54,13 +53,6 @@ void Player::Update(SDL_Renderer* renderer)
 		{
 			isJumping = false;
 			position.y = PLATFORM_HEIGHT - playerSpriteOffsetY - playerSpriteH; velocity.y = 0; 
-		}
-
-		if (reloadStart != 0) { if (spellCount < totalSpellCount) reloadStart--; }
-		else
-		{
-			if (spellCount < totalSpellCount) spellCount++;
-			reloadStart = totalSpellReloadTime;
 		}
 
 		//cooldown tracking

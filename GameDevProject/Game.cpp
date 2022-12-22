@@ -385,12 +385,10 @@ void Game::update()
 		{
 			for (int i = 1; i < gameObjects.size(); i++)
 			{
-				if (gameObjects.at(i)->Alive())
-				{
 					delete gameObjects.at(i);
 					gameObjects[i] = nullptr;
 					gameObjects.erase(gameObjects.begin() + i);
-				}
+					i--;
 			}
 		}
 		bossWarning = true;
@@ -413,9 +411,12 @@ void Game::update()
 				userChoice = showMenu(font);
 				if (userChoice == 0)
 				{
-					for (int i = 0; i < gameObjects.size(); i++)
+					for (int j = 0; j < gameObjects.size(); j++)
 					{
-						if (gameObjects.at(i)->Alive()) gameObjects.at(i)->Destroy();
+						delete gameObjects.at(j);
+						//gameObjects[j] = nullptr;
+						gameObjects.erase(gameObjects.begin() + j);
+						j--;
 					}
 					SDL_DestroyTexture(scoreTexture);
 					scoreTexture = nullptr;
@@ -426,14 +427,15 @@ void Game::update()
 					bossArrived = false;
 					frameCount = 0;
 					Mix_PlayMusic(gameMusic, -1);
-					continue;
+					break;
 				}
 				else isRunning = false;
 			}
-			else if (i == 0) isRunning = false;
+			if (i == 0) isRunning = false;
 			delete gameObjects.at(i);
-			gameObjects[i] = nullptr;
+			//gameObjects[i] = nullptr;
 			gameObjects.erase(gameObjects.begin() + i);
+			i--;
 		}
 	}
 }

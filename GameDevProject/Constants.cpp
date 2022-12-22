@@ -16,7 +16,7 @@
 //menu item colors
  SDL_Color colors[2] = { {0,0,0}, {0,255,0} };
 
- int BOSS_ARRIVAL_SCORE = 0;
+ int BOSS_ARRIVAL_SCORE = 10;
  int bossWarningTimer = 160;
 
 //Frame rate
@@ -57,11 +57,11 @@
 
 //player constants
  int jumpVel = -25;
- int playerHealth = 50;
+ int playerHealth = 100;
  int playerSourceW = 231;
  int playerSourceH = 190;
  int playerScale = 1;
- int playerProjDamage = 10;
+ int playerProjDamage = 100;
  int playerSpeed = 5;
 
 //the offset of player's sprites actual location
